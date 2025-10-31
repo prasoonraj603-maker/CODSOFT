@@ -1,0 +1,219 @@
+# --------------------------------------------------------
+# CONTACT BOOK APPLICATION (GUI Version)
+# Developed by: Prasoon Raj
+# --------------------------------------------------------
+# Features:
+# ✅ Add new contacts (name, phone, email, address)
+# ✅ Display list of saved contacts
+# ✅ Search contacts by name or phone number
+# ✅ Update contact details
+# ✅ Delete contacts
+# ✅ User-friendly interface with Tkinter
+# --------------------------------------------------------
+
+import tkinter as tk
+from tkinter import messagebox, ttk
+import os
+
+# File to store contacts
+CONTACT_FILE = "contacts.txt"
+
+
+# ---------- FUNCTIONS ----------
+
+def load_contacts():
+    """Load contacts from file into a list."""
+    contacts = []
+    if os.path.exists(CONTACT_FILE):
+        with open(CONTACT_FILE, "r") as file:
+            for line in file:
+                parts = line.strip().split(",")
+                if len(parts) == 4:
+                    contacts.append(parts)
+    return contacts
+
+
+def save_contacts(contacts):
+    """Save all contacts back to file."""
+    with open(CONTACT_FILE, "w") as file:
+        for contact in contacts:
+            file.write(",".join(contact) + "\n")
+
+
+def refresh_contact_list():
+    """Refresh the listbox with current contacts."""
+    contact_list.delete(*contact_list.get_children())
+    for contact in contacts:
+        contact_list.insert("", "end", values=(contact[0], contact[1]))
+
+
+def add_contact():
+    """Add a new contact."""
+    name = name_var.get().strip()
+    phone = phone_var.get().strip()
+    email = email_var.get().strip()
+    address = address_var.get().strip()
+
+    if name == "" or phone == "":
+        messagebox.showwarning("Input Error", "Name and phone number are required!")
+        return
+
+    # Add to contacts list
+    contacts.append([name, phone, email, address])
+    save_contacts(contacts)
+    refresh_contact_list()
+
+    messagebox.showinfo("Success", f"Contact '{name}' added successfully!")
+    clear_fields()
+
+
+def clear_fields():
+    """Clear all input fields."""
+    name_var.set("")
+    phone_var.set("")
+    email_var.set("")
+    address_var.set("")
+
+
+def search_contact():
+    """Search for contacts by name or phone number."""
+    query = search_var.get().lower()
+    contact_list.delete(*contact_list.get_children())
+
+    found = False
+    for contact in contacts:
+        if query in contact[0].lower() or query in contact[1]:
+            contact_list.insert("", "end", values=(contact[0], contact[1]))
+            found = True
+
+    if not found:
+        messagebox.showinfo("Search Result", "No contact found!")
+
+
+def on_contact_select(event):
+    """Display contact details when selected."""
+    selected_item = contact_list.selection()
+    if selected_item:
+        selected = contact_list.item(selected_item)['values']
+        for contact in contacts:
+            if contact[0] == selected[0] and contact[1] == selected[1]:
+                name_var.set(contact[0])
+                phone_var.set(contact[1])
+                email_var.set(contact[2])
+                address_var.set(contact[3])
+                break
+
+
+def update_contact():
+    """Update details of the selected contact."""
+    selected_item = contact_list.selection()
+    if not selected_item:
+        messagebox.showwarning("Selection Error", "Please select a contact to update!")
+        return
+
+    selected = contact_list.item(selected_item)['values']
+    for contact in contacts:
+        if contact[0] == selected[0] and contact[1] == selected[1]:
+            contact[0] = name_var.get()
+            contact[1] = phone_var.get()
+            contact[2] = email_var.get()
+            contact[3] = address_var.get()
+            break
+
+    save_contacts(contacts)
+    refresh_contact_list()
+    messagebox.showinfo("Updated", "Contact updated successfully!")
+    clear_fields()
+
+
+def delete_contact():
+    """Delete a selected contact."""
+    selected_item = contact_list.selection()
+    if not selected_item:
+        messagebox.showwarning("Selection Error", "Please select a contact to delete!")
+        return
+
+    selected = contact_list.item(selected_item)['values']
+    for contact in contacts:
+        if contact[0] == selected[0] and contact[1] == selected[1]:
+            contacts.remove(contact)
+            break
+
+    save_contacts(contacts)
+    refresh_contact_list()
+    messagebox.showinfo("Deleted", f"Contact '{selected[0]}' deleted successfully!")
+    clear_fields()
+
+
+# ---------- GUI DESIGN ----------
+
+root = tk.Tk()
+root.title("📒 Contact Book - By Prasoon Raj")
+root.geometry("750x500")
+root.config(bg="#f4f4f4")
+
+# Variables
+name_var = tk.StringVar()
+phone_var = tk.StringVar()
+email_var = tk.StringVar()
+address_var = tk.StringVar()
+search_var = tk.StringVar()
+
+# Load contacts from file
+contacts = load_contacts()
+
+
+# --- Title ---
+tk.Label(root, text="Contact Book", font=("Arial", 20, "bold"), bg="#f4f4f4", fg="#2b547e").pack(pady=10)
+
+
+# --- Input Frame ---
+frame = tk.Frame(root, bg="#f4f4f4")
+frame.pack(pady=10)
+
+tk.Label(frame, text="Name:", bg="#f4f4f4").grid(row=0, column=0, padx=5, pady=5, sticky="e")
+tk.Entry(frame, textvariable=name_var, width=25).grid(row=0, column=1, padx=5, pady=5)
+
+tk.Label(frame, text="Phone:", bg="#f4f4f4").grid(row=1, column=0, padx=5, pady=5, sticky="e")
+tk.Entry(frame, textvariable=phone_var, width=25).grid(row=1, column=1, padx=5, pady=5)
+
+tk.Label(frame, text="Email:", bg="#f4f4f4").grid(row=0, column=2, padx=5, pady=5, sticky="e")
+tk.Entry(frame, textvariable=email_var, width=25).grid(row=0, column=3, padx=5, pady=5)
+
+tk.Label(frame, text="Address:", bg="#f4f4f4").grid(row=1, column=2, padx=5, pady=5, sticky="e")
+tk.Entry(frame, textvariable=address_var, width=25).grid(row=1, column=3, padx=5, pady=5)
+
+
+# --- Buttons ---
+btn_frame = tk.Frame(root, bg="#f4f4f4")
+btn_frame.pack(pady=10)
+
+tk.Button(btn_frame, text="Add Contact", command=add_contact, bg="#5cb85c", fg="white", width=12).grid(row=0, column=0, padx=5)
+tk.Button(btn_frame, text="Update", command=update_contact, bg="#0275d8", fg="white", width=12).grid(row=0, column=1, padx=5)
+tk.Button(btn_frame, text="Delete", command=delete_contact, bg="#d9534f", fg="white", width=12).grid(row=0, column=2, padx=5)
+tk.Button(btn_frame, text="Clear", command=clear_fields, bg="#f0ad4e", fg="white", width=12).grid(row=0, column=3, padx=5)
+
+
+# --- Search Bar ---
+search_frame = tk.Frame(root, bg="#f4f4f4")
+search_frame.pack(pady=10)
+
+tk.Entry(search_frame, textvariable=search_var, width=40).pack(side="left", padx=10)
+tk.Button(search_frame, text="Search", command=search_contact, bg="#5bc0de", fg="white", width=10).pack(side="left")
+
+
+# --- Contact List Table ---
+cols = ("Name", "Phone")
+contact_list = ttk.Treeview(root, columns=cols, show="headings", height=10)
+contact_list.heading("Name", text="Name")
+contact_list.heading("Phone", text="Phone")
+contact_list.pack(pady=10)
+
+# Bind click event to select contact
+contact_list.bind("<ButtonRelease-1>", on_contact_select)
+
+# Populate contact list
+refresh_contact_list()
+
+# Run the main loop
+root.mainloop()
