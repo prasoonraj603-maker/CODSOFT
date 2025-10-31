@@ -1,0 +1,45 @@
+# Simple Calculator Program
+
+print("Simple Calculator")
+
+# Input: Prompt the user for two numbers and convert to float
+num1 = float(input("Enter first number: "))
+num2 = float(input("Enter second number: "))
+
+# Display operation options
+print("Select operation:")
+print("1. Addition (+)")
+print("2. Subtraction (-)")
+print("3. Multiplication (*)")
+print("4. Division (/)")
+
+# Input: User selects the operation
+operation = input("Enter choice (1/2/3/4): ")
+
+# Initialize variables for result and operation symbol
+result = None
+op_symbol = ''
+
+# Perform calculation based on operation selected
+if operation == '1':
+    result = num1 + num2
+    op_symbol = '+'
+elif operation == '2':
+    result = num1 - num2
+    op_symbol = '-'
+elif operation == '3':
+    result = num1 * num2
+    op_symbol = '*'
+elif operation == '4':
+    # Handle division by zero case
+    if num2 == 0:
+        print("Error: Division by zero is not allowed.")
+    else:
+        result = num1 / num2
+        op_symbol = '/'
+else:
+    print("Invalid Input: Please select a valid operation choice (1-4).")
+
+# Output: Display the result if valid
+if result is not None:
+    print(f"Result: {num1} {op_symbol} {num2} = {result}")
